@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "env-o-loader": "^1.0.7",
+    "lodash": "^4.17.10",
     "mysql-event-emitter": "^1.0.8",
     "mysql-events": "0.0.11",
     "zongji": "^0.4.6"
