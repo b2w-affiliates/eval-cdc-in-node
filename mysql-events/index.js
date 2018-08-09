@@ -1,17 +1,14 @@
 "use strict"
 
 const MySQLEvents = require('mysql-events')
+const envLoader = require('env-o-loader')
 
-const dsn = {
-  host:     "localhost",
-  user:     "events",
-  password: "events",
-}
+const config = envLoader('../config.yaml')
 
-const mysqlEventWatcher = MySQLEvents(dsn)
+const mysqlEventWatcher = MySQLEvents(config)
 
 const watcher = mysqlEventWatcher.add(
-   "testdb.companies.cnpj.value",
+   "",
 
    (oldRow, newRow, event) => {
 
