@@ -1,5 +1,4 @@
 "use strict"
-process.env.TZ = 'America/Sao_Paulo'
 const envLoader = require('env-o-loader')
 const ZongJi = require('zongji')
 const _ = require('lodash')
@@ -8,12 +7,14 @@ const _ = require('lodash')
 const options = {
 
   // binlogName: 'mysql-bin.000001',
-  binlogName: 'mysql-bin.000002',
+  // binlogName: 'mysql-bin.000002',
 
   // startAtEnd: true,
   /**
    * without 'tablemap' events ('writerows', 'updaterows', 'deleterows') WILL not WORKS
    */
+  // includeEvents: [ 'rotate' ],
+
   includeEvents: [ 'rotate', 'tablemap', 'writerows', 'updaterows', 'deleterows', 'unknown' ],
   // includeEvents: [ 'tablemap', 'writerows', 'updaterows', 'deleterows'],
   includeSchema: {
@@ -84,7 +85,8 @@ zongji.on('binlog', event => {
 
       switch(eventName) {
 
-        case 'unknown':
+        case 'rotate':
+          console.log(event)
           break
 
         case 'updaterows':
