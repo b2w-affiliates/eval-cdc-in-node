@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "deep-object-diff": "^1.1.0",
     "env-o-loader": "^1.0.7",
     "lodash": "^4.17.10",
     "mysql-event-emitter": "^1.0.8",

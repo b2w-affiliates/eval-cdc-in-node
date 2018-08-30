@@ -2,6 +2,9 @@
 const envLoader = require('env-o-loader')
 const ZongJi = require('zongji')
 const _ = require('lodash')
+const EventEmitter = require('events');
+
+const { diff, addedDiff, deletedDiff, detailedDiff, updatedDiff } = require("deep-object-diff");
 
 
 const options = {
@@ -67,6 +70,8 @@ class EventCache {
 
 const eventCache = new EventCache()
 
+const emitter = new EventEmitter()
+
 zongji.on('binlog', event => {
 
 
@@ -81,41 +86,46 @@ zongji.on('binlog', event => {
         return
       }
 
-      console.log("date:", new Date(event.timestamp))
+      // console.log("date:", new Date(event.timestamp))
 
       switch(eventName) {
 
         case 'rotate':
-          console.log(event)
+          // console.log(event)
           break
 
         case 'updaterows':
+          const tableName = event.tableMap[event.tableId].tableName
           const updatedRows = event.rows.map(row => {
-            return {
-              after: { 
-                id: row.after.user_id,
-                email: row.after.email,
-                updated_at: row.after.data_atualizacao,
-              },
-              before: {
-                id: row.before.user_id,
-                email: row.before.email,
-                updated_at: row.before.data_atualizacao,
-              }
-            }
+            const change = diff(row.before, row.after)
+            return { ...change, user_id: row.after.user_id }
           })
           
-          console.log("updates:", updatedRows)
+          updatedRows.forEach(change => {
+     
+
+            emitter.emit(`${tableName}:change`, change)
+
+            _.keys(change).forEach(field => {
+              // if(change.user_id === 45876) {
+              //   debugger
+              // }
+
+              emitter.emit(`${tableName}:change:${field}`, change)
+              emitter.emit(`${tableName}:change:${field}:${change[field]}`, change)
+            })
+          })
+          
           break
 
         case 'writerows':
           const newRows = event.rows.map(row => ({ id: row.user_id, email: row.email }))
-          console.log("create:", newRows)
+          // console.log("create:", newRows)
           break
 
         case 'deleterows':
           const deletedRows = event.rows.map(row => ({ id: row.user_id, email: row.email }))
-          console.log("delete:", deletedRows)
+          // console.log("delete:", deletedRows)
           break
       }
 
@@ -135,4 +145,20 @@ process.on('SIGINT', function() {
   console.log('Got SIGINT.')
   zongji.stop()
   process.exit()
+})
+
+
+// emitter.on("admin_usuarios:change:nova_senha", changes => {
+//   console.log('---------------------------------------')
+//   console.log("changes in admin_usuarios.nova_senha:", changes)
+// })
+
+// emitter.on("admin_usuarios:change", changes => {
+//   console.log('---------------------------------------')
+//   console.log("changes in admin_usuarios:", changes)
+// })
+
+emitter.on("admin_usuarios:change:criacao:Invalid Date", changes => {
+  console.log('---------------------------------------')
+  console.log("changes in admin_usuarios.nova_senha = 'Invalid Date':", changes)
 })
